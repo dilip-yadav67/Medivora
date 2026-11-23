@@ -1,0 +1,186 @@
+import {useState,useEffect,useRef} from 'react';
+import {api} from './api';import BODY from './body';import O from './organs';
+
+const NAVD=['Dashboard','Patients','Appointments','Health Records','AI Insights','Diagnostics','Treatments','Medications','Reports','Analytics','Alerts','Messages','Settings'];
+const NAVP=['Dashboard','Appointments','Medications','Health Records','Reports','Health Tracker','AI Assistant','Notifications','Settings'];
+const IC=['▦','👥','📅','🗂','✨','🩺','💊','💉','📄','📊','🔔','💬','⚙'];
+const mut={color:'var(--mut)'};
+const tgDark=()=>{const r=document.documentElement,d=r.dataset.theme==='dark'||(!r.dataset.theme&&matchMedia('(prefers-color-scheme:dark)').matches);r.dataset.theme=d?'light':'dark';document.body.classList.toggle('dk',!d)};
+
+const Heart=()=><svg viewBox="0 0 100 90" className="beat" width="34"><defs><linearGradient id="hg" x1="0" x2="1"><stop offset="0" stopColor="#f43f5e"/><stop offset="1" stopColor="#8b5cf6"/></linearGradient></defs><path d="M50 82C20 58 8 42 8 28 8 16 18 8 29 8c9 0 17 5 21 13 4-8 12-13 21-13 11 0 21 8 21 20 0 14-12 30-42 54z" fill="url(#hg)"/><circle cx="38" cy="38" r="4" fill="#fff"/><circle cx="62" cy="38" r="4" fill="#fff"/><path d="M40 52q10 8 20 0" stroke="#fff" strokeWidth="3" fill="none" strokeLinecap="round"/></svg>;
+const Logo=({hide})=><div className="logo"><Heart/><span className={hide?'logo2':''}>Medivora <span style={{color:'var(--p)'}}>AI</span></span></div>;
+function Settings({toast}){
+ const R=document.documentElement,B=document.body;
+ const [dk,setDk]=useState(R.dataset.theme==='dark'||(!R.dataset.theme&&matchMedia('(prefers-color-scheme:dark)').matches)),[ac,setAc]=useState(B.classList.contains('access')),[tl,setTl]=useState(B.classList.contains('teal'));
+ const row=(ic,t,d,on,fn)=><div className="row" style={{padding:'14px 0'}}><span style={{fontSize:'1.4rem'}}>{ic}</span><div><b>{t}</b><br/><small style={mut}>{d}</small></div><button className={'btn '+(on?'g':'o')} style={{marginLeft:'auto',minWidth:70}} onClick={fn}>{on?'On':'Off'}</button></div>;
+ return <><div className="hero g"><h1 style={{margin:0}}>⚙ Settings</h1><p>Personalise how Medivora looks and feels.</p></div>
+ <div className="w" style={{cursor:'default',maxWidth:640}}><h3>Appearance</h3>
+ {row('🌙','Dark mode','Easier on the eyes in low light',dk,()=>{tgDark();setDk(!dk)})}
+ {row('♿','Accessibility mode','Larger fonts and high contrast',ac,()=>{B.classList.toggle('access');setAc(!ac);toast(ac?'Accessibility mode off':'Accessibility mode on')})}
+ {row('🎨','Calm teal-green theme','Switch from blue-purple to a calm teal-green identity',tl,()=>{B.classList.toggle('teal');setTl(!tl)})}</div></>}
+const Badge=()=><div className="by"><i>DY</i><span>Built by <b>Dilip Yadav</b></span></div>;
+
+function Landing({go}){return <div className="land"><Logo/><h1>Healthcare that feels <span>calm, colourful and clear</span></h1><p style={{maxWidth:520,...mut}}>One smart platform for doctors and patients: an interactive body map, AI insights, medicine reminders and SMS alerts.</p>
+<div className="roles"><button className="role g" onClick={()=>go('doctor')}>👨‍⚕️ Doctor Login<small>Patients, alerts, prescriptions</small></button><button className="role" style={{background:'linear-gradient(135deg,#0d9488,#65a30d)'}} onClick={()=>go('patient')}>🧑 Patient Login<small>Appointments, medicines, AI helper</small></button></div></div>}
+
+function Auth({role,startMode,onBack,onDone,onGuest}){
+ const [mode,setMode]=useState(startMode),[f,setF]=useState({name:'',email:'',password:''}),[er,setEr]=useState(''),[busy,setBusy]=useState(false);
+ const d=role==='doctor',set=k=>e=>setF({...f,[k]:e.target.value});
+ const submit=async()=>{setEr('');if(!f.email||!f.password)return setEr('Please enter your email and password');setBusy(true);
+  try{const r=await api(mode==='signup'&&!d?'/auth/register':'/auth/login',{method:'POST',body:{...f,role}});localStorage.setItem('mv_t',r.token);onDone(r.user)}catch(e){setEr(e.message)}setBusy(false)};
+ return <div className="land"><Logo/><div className="auth"><h2>{d?'Doctor Login':'Patient Portal'}</h2><small style={mut}>{d?'Registered doctors only':'Login or create a new account'}</small>
+ {!d&&<div className="tabs">{['login','signup'].map(m=><button key={m} className={mode===m?'on':''} onClick={()=>setMode(m)}>{m==='login'?'Login':'Sign up'}</button>)}</div>}
+ {!d&&mode==='signup'&&<input placeholder="Full name" value={f.name} onChange={set('name')}/>}
+ <input type="email" placeholder="Email" value={f.email} onChange={set('email')}/><input type="password" placeholder="Password" value={f.password} onChange={set('password')} onKeyDown={e=>e.key==='Enter'&&submit()}/>
+ <div className="err">{er}</div><button className="btn g" style={{width:'100%'}} disabled={busy} onClick={submit}>{busy?'Please wait...':!d&&mode==='signup'?'Create account':'Login'}</button>
+ <button className="btn o" style={{width:'100%',marginTop:10}} onClick={onGuest}>⚡ Enter without email</button>
+ <p style={{textAlign:'center'}}><a href="#" onClick={e=>{e.preventDefault();onBack()}} style={{color:'var(--p)'}}>← Back</a></p></div></div>}
+
+function Gate({onClose,onAuth}){return <div className="modal" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mb" style={{textAlign:'center'}}><div style={{fontSize:'2.4rem'}}>🔒</div><h2>Login or sign up to continue</h2><p style={mut}>You are in guest mode. Please log in or create an account to make changes.</p><button className="btn g" onClick={()=>onAuth('login')}>Login</button> <button className="btn o" onClick={()=>onAuth('signup')}>Sign up</button><br/><br/><a href="#" onClick={e=>{e.preventDefault();onClose()}} style={{color:'var(--p)'}}>Maybe later</a></div></div>}
+
+function OrganModal({k,onClose}){const o=O[k],m=Math.max(...o.t);return <div className="modal" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mb"><h2 style={{color:o.c}}>{o.n} <span className="pill">{o.s}</span></h2><b>History</b>{o.h.map(x=><div className="row" key={x}>📌 {x}</div>)}<p><b>Latest scan</b><br/>{o.sc}</p><b>7-day trend</b><div className="ts">{o.t.map((v,i)=><i key={i} style={{height:v/m*100+'%',background:o.c}}/>)}</div><br/><button className="btn g" onClick={onClose}>Close</button></div></div>}
+
+const Generic=({n})=><><div className="hero g"><h1 style={{margin:0}}>{n}</h1><p>This section is coming soon. Open the Dashboard to explore the main features.</p></div><div className="pg">{['#6366f1,#8b5cf6','#ec4899,#f97316','#0d9488,#65a30d'].map((c,i)=><div className="w" key={i} style={{background:`linear-gradient(135deg,${c})`,color:'#fff',border:0}}><h3>{n} card {i+1}</h3><p>Sample colourful content block.</p></div>)}</div></>;
+
+/* ---------------- Doctor dashboard ---------------- */
+const RK=[['Cardiovascular Risk','Low',18,'#22c55e'],['Diabetes Risk','Low',22,'#22c55e'],['Respiratory Risk','Medium',46,'#f59e0b'],['Stress Level','Low',24,'#22c55e'],['Sleep Quality','Good',82,'#3b82f6']];
+const AP=[['Sarah Johnson','Cardiology Consultation','10:00 AM','#ec4899'],['James Williams','Follow-up Checkup','11:30 AM','#6366f1'],['Olivia Brown','Blood Test','02:00 PM','#f97316'],['Michael Davis','X-Ray Scan','03:30 PM','#0d9488']];
+const LAB=[['Complete Blood Count','May 14','Normal'],['Lipid Profile','May 13','Borderline'],['Liver Function Test','May 12','Normal'],['Thyroid Profile','May 11','Normal'],['Vitamin D','May 10','Normal']];
+const CD=[['Hypertension',34,'#4f6df5'],['Diabetes',26,'#14b8a6'],['Respiratory',18,'#8b5cf6'],['Cardiovascular',12,'#f59e0b'],['Others',10,'#94a3b8']];
+const FEED=[['🧪','Lab results for Sarah Johnson are ready','5 min'],['👤','New patient registered: Olivia Brown','15 min'],['📅','Appointment with James Williams confirmed','25 min'],['❤️','High BP alert for Michael Davis','40 min'],['💊','Medication reminder sent to 8 patients','1 hour']];
+const QA=[['➕','Add Patient','Create new profile','patient'],['📅','Schedule Appointment','Book a new slot','appointment'],['🧪','Order Lab Test','Request test','lab'],['📄','Generate Report','AI summary','report'],['℞','Prescription','Write prescription','prescription'],['✉️','Send Message','To patient','message']];
+
+function Doctor({u,act,setOrgan,toast,setForm}){
+ const [cols,setCols]=useState([['body','risk'],['kpi','vit','pair'],['app','ai','feed']]),drag=useRef(null);
+ let a=0;const cg=CD.map(c=>{const s=a;a+=c[1];return `${c[2]} ${s}% ${a}%`}).join(',');
+ const drop=(ci,e)=>{e.preventDefault();const id=drag.current;if(!id)return;const els=[...e.currentTarget.children].filter(x=>x.dataset.id!==id);let i=els.findIndex(x=>e.clientY<x.getBoundingClientRect().top+x.offsetHeight/2);if(i<0)i=els.length;setCols(c=>{const n=c.map(l=>l.filter(x=>x!==id));n[ci].splice(i,0,id);return n})};
+ const W={
+ body:['w',<><div className="body"><div className="chips">{Object.entries(O).map(([k,o])=><button key={k} className="chip" onClick={()=>setOrgan(k)}>{o.n}<em>{o.s}</em></button>)}</div><div className="bd" onClick={e=>{const x=e.target.closest('[data-o]');x&&setOrgan(x.dataset.o)}} dangerouslySetInnerHTML={{__html:BODY}}/></div>
+  <div className="score"><svg width="46" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#334" strokeWidth="4"/><circle cx="18" cy="18" r="15" fill="none" stroke="#5eead4" strokeWidth="4" strokeDasharray="87 100" transform="rotate(-90 18 18)"/></svg><div><small>Overall Health Score</small><br/><b>92</b>/100 <small style={{color:'#5eead4'}}>Excellent</small></div></div><small style={mut}>Tap any organ to open history, scans and trends.</small></>],
+ risk:['w',<><h3>Health Risk Analysis</h3>{RK.map(r=><div className="row" key={r[0]}><span style={{width:120}}>{r[0]}</span><span style={{color:r[3],width:50}}>{r[1]}</span><div className="bar"><i style={{width:r[2]+'%',background:r[3]}}/></div><b>{r[2]}%</b></div>)}</>],
+ kpi:['w',<div className="kp"><div className="k k1">Total Patients<b>2,458</b><small>▲ 12.5% vs last month</small></div><div className="k k2">Appointments<b>63</b><small>▲ 8.3%</small></div><div className="k k3">Critical Alerts<b>12</b><small>▼ 4.2%</small></div></div>],
+ vit:['w',<><h3>Vitals Overview <small style={{float:'right',...mut}}>Today, 14 May 2025</small></h3><div className="vit">{[['❤️ Heart Rate','72 bpm'],['💧 Blood Pressure','120/80'],['🫁 Oxygen','98 %'],['🌡 Temp','36.6 °C']].map(v=><div className="v" key={v[0]}>{v[0]}<b>{v[1]}</b><span className="ok">Normal</span></div>)}</div><svg className="ecg" viewBox="0 0 600 90" preserveAspectRatio="none"><path d="M0 50H60L70 50 80 15 92 80 104 50H200L210 50 220 15 232 80 244 50H340L350 50 360 15 372 80 384 50H480L490 50 500 15 512 80 524 50H600"/></svg><small style={mut}>● Last updated: 5 min ago</small></>],
+ pair:['dnd',<div className="pg" style={{gap:16}}><div className="w"><h3>Recent Lab Results</h3>{LAB.map(l=><div className="row" key={l[0]}>🧪 <div>{l[0]}<br/><small style={mut}>{l[1]}, 2025</small></div><span className={'pill t '+(l[2]==='Normal'?'':'w2')}>{l[2]}</span></div>)}</div><div className="w"><h3>Top Conditions</h3><div style={{display:'flex',gap:12,alignItems:'center'}}><div className="donut" style={{background:`conic-gradient(${cg})`}}><div>2,458<br/>Total</div></div><div style={{fontSize:'.78rem'}}>{CD.map(c=><div key={c[0]}><span style={{color:c[2]}}>●</span> {c[0]} <b>{c[1]}%</b></div>)}</div></div></div></div>],
+ app:['w',<><h3>Upcoming Appointments</h3>{AP.map(x=><div className="row" key={x[0]}><div className="pa" style={{background:x[3]}}>{x[0][0]}</div><div><b>{x[0]}</b><br/><small style={mut}>{x[1]}</small></div><div className="t">{x[2]}<br/><span className="pill u">Upcoming</span></div></div>)}</>],
+ ai:['w ai',<><h3>✨ AI Health Insights <span className="pill u">New</span></h3><p>Our AI has detected 3 important insights for your review.</p><button className="btn" style={{background:'#fff',color:'var(--p)'}} onClick={act(()=>toast('Why: BP + age + family history raised Michael Davis risk'))}>View Insights →</button></>],
+ feed:['w',<><h3>Activity Feed</h3>{FEED.map(f=><div className="row" key={f[1]}>{f[0]} <span>{f[1]}</span><span className="t">{f[2]}</span></div>)}</>]};
+ return <><h2 style={{margin:0}}>Good morning, Dr. Alex 👋</h2><p style={{...mut,margin:'4px 0 14px'}}>Here is an overview of your patients and key health insights. <small>(Drag cards to rearrange)</small></p>
+ <div className="cols">{cols.map((c,ci)=><div className="col" key={ci} onDragOver={e=>e.preventDefault()} onDrop={e=>drop(ci,e)}>{c.map(id=><div key={id} data-id={id} className={W[id][0]} draggable={!u.guest} onDragStart={()=>drag.current=id}>{W[id][1]}</div>)}</div>)}</div>
+ <div className="w" style={{marginTop:16,cursor:'default'}}><h3>Quick Actions</h3><div className="qa" style={{margin:0}}>{QA.map(q=><button key={q[1]} onClick={act(()=>setForm(q[3]))}>{q[0]} <b>{q[1]}</b><br/><small style={mut}>{q[2]}</small></button>)}</div></div></>}
+
+/* ---------------- Patient dashboard ---------------- */
+const bot=q=>{const l=q.toLowerCase();return /chest|breath/.test(l)?'⚠ This could be an emergency. Go to the nearest hospital or call 112 immediately.':/sugar|diabet/.test(l)?'Cut down on sweets and refined carbs, walk 30 minutes daily and check your sugar regularly.':/bp|pressure/.test(l)?'Reduce salt, manage stress, take your medicines on time and note your BP daily.':/cholesterol|diet|food/.test(l)?'Eat more fibre, vegetables and fruit, and limit fried food.':'Please consult your doctor about this. I can only share general information.'};
+function Patient({u,act,setGate,toast}){
+ const [d,setD]=useState(null),[bp,setBp]=useState(''),[msgs,setMsgs]=useState([['a','Hello! Ask me anything about your health.']]),[q,setQ]=useState('');
+ const load=()=>api(u.guest?'/public/sample':'/patient/dashboard').then(setD).catch(e=>toast(e.message));useEffect(()=>{load()},[]);
+ if(!d)return <p>Loading...</p>;
+ const lock=()=>u.guest&&setGate(true),up=d.appointments.filter(a=>new Date(a.date)>=new Date()),vals=(d.tracker.length?d.tracker.map(t=>t.bp):[128,126,130,124,122,125,120]).slice(-7);
+ const addBp=async()=>{if(!bp)return;try{await api('/patient/tracker',{method:'POST',body:{bp}});setBp('');toast('Saved');load()}catch(e){toast(e.message)}};
+ const take=async id=>{await api('/patient/meds/'+id+'/taken',{method:'PATCH'});load()};
+ const send=()=>{if(!q.trim())return;setMsgs(m=>[...m,['u',q],['a',bot(q)]]);setQ('')};
+ const fmt=x=>new Date(x).toLocaleString([],{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+ return <><h2 style={{margin:0}}>Hello, {u.name.split(' ')[0]} 👋</h2><p style={mut}>Here is your health summary for today</p>
+ <div className="kp" style={{gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',marginBottom:16}}><div className="k k1">Total Appointments<b>{d.appointments.length}</b></div><div className="k k2">Upcoming<b>{up.length}</b></div><div className="k k3">Medicines Today<b>{d.meds.length}</b></div><div className="k" style={{background:'linear-gradient(135deg,#0d9488,#65a30d)'}}>Health Records<b>18</b></div></div>
+ <div className="pg">
+ <div className="w" style={{cursor:'default'}}><h3>📅 Upcoming Appointments</h3>{up.map(a=><div className="row" key={a._id}><div className="pa g">{a.doctor.replace('Dr. ','')[0]}</div><div><b>{a.doctor}</b><br/><small>{a.specialty}</small></div><div className="t">{fmt(a.date)}</div></div>)}<small style={mut}>📱 SMS reminders are sent 1 day and 1 hour before</small></div>
+ <div className="w" style={{cursor:'default'}}><h3>💊 Medication Reminders</h3>{d.meds.map(m=><div className="row" key={m._id}>💊 <div><b>{m.name}</b><br/><small style={mut}>{m.time}</small></div><button className={'btn '+(m.taken?'':'g')} style={{marginLeft:'auto',padding:'5px 12px'}} onClick={act(()=>take(m._id))}>{m.taken?'✔ Taken':'Mark taken'}</button></div>)}</div>
+ <div className="w" style={{cursor:'default'}}><h3>🧪 Recent Reports</h3>{[['Complete Blood Count','Normal'],['Lipid Profile','Borderline'],['Thyroid Profile','Normal']].map(r=><div className="row" key={r[0]}>📄 {r[0]}<span className={'pill t '+(r[1]==='Normal'?'':'w2')}>{r[1]}</span></div>)}<small style={mut}>AI: Your cholesterol is slightly high. Reduce oily and fried food.</small></div>
+ <div className="w" style={{cursor:'default'}}><h3>🗂 Health Records</h3><div className="row">Allergy: Penicillin</div><div className="row">Condition: Mild hypertension</div><div className="row">Blood group: B+</div></div>
+ <div className="w" style={{cursor:'default'}}><h3>📈 Daily Health Tracker</h3><div style={{display:'flex',gap:6}}><input type="number" placeholder="BP (sys)" value={bp} readOnly={u.guest} onFocus={lock} onChange={e=>setBp(e.target.value)} style={{width:'50%',padding:8,borderRadius:9,border:'1px solid var(--bd)',background:'var(--bg)'}}/><button className="btn g" onClick={act(addBp)}>Add</button></div><div className="ts">{vals.map((v,i)=><i key={i} title={v} style={{height:v/1.8+'%'}}/>)}</div><small style={mut}>Last 7 BP readings</small></div>
+ <div className="w ai" style={{cursor:'default'}}><h3>🤖 AI Health Assistant</h3><div className="chat">{msgs.map((m,i)=><div key={i} className={'m '+m[0]} style={m[0]==='a'?{color:'var(--tx)'}:{}}>{m[1]}{m[0]==='a'&&i>0&&<><br/><small>For information only. Please consult your doctor.</small></>}</div>)}</div>
+ <div style={{display:'flex',gap:6,marginTop:8}}><input placeholder="Ask something..." value={q} readOnly={u.guest} onFocus={lock} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&send()} style={{flex:1,padding:8,borderRadius:9,border:0,color:'#000'}}/><button className="btn" style={{background:'#fff',color:'var(--p)'}} onClick={act(send)}>Send</button></div><small>For information only. Please consult your doctor.</small></div></div></>}
+
+/* ---------------- Doctor workspace pages ---------------- */
+const tm=x=>x?new Date(x).toLocaleString([],{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+const FORMS={
+ patient:{t:'Add Patient',ic:'👥',page:'Patients',f:[['name','Full name'],['age','Age','number'],['gender','Gender',['Male','Female','Other']],['condition','Condition'],['phone','Phone number','tel']],line:d=>[d.name,`${d.age} yrs · ${d.gender} · ${d.condition}`,d.phone]},
+ appointment:{t:'Schedule Appointment',ic:'📅',page:'Appointments',f:[['patient','Patient name'],['reason','Reason'],['when','Date and time','datetime-local']],line:d=>[d.patient,d.reason,tm(d.when)]},
+ lab:{t:'Order Lab Test',ic:'🧪',page:'Diagnostics',f:[['patient','Patient name'],['test','Test',['Complete Blood Count','Lipid Profile','Thyroid Profile','Liver Function Test','Vitamin D','X-Ray','ECG']],['priority','Priority',['Normal','Urgent']]],line:d=>[d.patient,d.test,d.priority]},
+ prescription:{t:'Write Prescription',ic:'💊',page:'Medications',f:[['patient','Patient name'],['medicine','Medicine'],['dosage','Dosage (e.g. twice daily)'],['days','Duration (days)','number']],line:d=>[d.patient,`${d.medicine} · ${d.dosage}`,d.days+' days']},
+ message:{t:'Send Message',ic:'💬',page:'Messages',f:[['patient','To (patient name)'],['text','Message','textarea']],line:d=>[d.patient,d.text,'Sent']},
+ report:{t:'Generate Report',ic:'📄',page:'Reports',f:[['patient','Patient name'],['kind','Report type',['Cardiac summary','Diabetes review','General health summary','Lab results summary']]],line:d=>[d.patient,d.summary,d.kind]},
+ record:{t:'Add Health Record',ic:'🗂',page:'Health Records',f:[['patient','Patient name'],['diagnosis','Diagnosis'],['notes','Notes']],line:d=>[d.patient,d.diagnosis+' - '+d.notes,'']},
+ treatment:{t:'Add Treatment',ic:'💉',page:'Treatments',f:[['patient','Patient name'],['plan','Treatment plan'],['weeks','Duration (weeks)','number']],line:d=>[d.patient,d.plan,d.weeks+' weeks']}};
+const SAMPLE={
+ patient:[{name:'Sarah Johnson',age:'45',gender:'Female',condition:'Hypertension',phone:'98765 43210'},{name:'James Williams',age:'52',gender:'Male',condition:'Diabetes',phone:'98123 45678'},{name:'Olivia Brown',age:'34',gender:'Female',condition:'Asthma',phone:'99887 76655'}],
+ appointment:[{patient:'Sarah Johnson',reason:'Cardiology consultation',when:'2026-11-24T10:00'},{patient:'James Williams',reason:'Follow-up checkup',when:'2026-11-24T11:30'},{patient:'Olivia Brown',reason:'Blood test',when:'2026-11-24T14:00'}],
+ lab:[{patient:'Sarah Johnson',test:'Lipid Profile',priority:'Normal'},{patient:'Michael Davis',test:'ECG',priority:'Urgent'}],
+ prescription:[{patient:'James Williams',medicine:'Metformin 500mg',dosage:'Twice daily',days:'30'},{patient:'Sarah Johnson',medicine:'Amlodipine 5mg',dosage:'Once daily',days:'60'}],
+ message:[{patient:'Michael Davis',text:'Please visit the clinic for a BP review.'},{patient:'Olivia Brown',text:'Your blood test report is ready.'}],
+ report:[{patient:'Sarah Johnson',kind:'Cardiac summary',summary:'AI summary: vitals stable, BP 120/80, follow-up in 4 weeks.'}],
+ record:[{patient:'James Williams',diagnosis:'Type 2 diabetes',notes:'HbA1c 7.2, diet plan started'},{patient:'Sarah Johnson',diagnosis:'Hypertension',notes:'On Amlodipine, BP controlled'}],
+ treatment:[{patient:'Olivia Brown',plan:'Inhaler therapy and breathing exercises',weeks:'8'},{patient:'James Williams',plan:'Diet control and daily walking',weeks:'12'}]};
+const PT={Patients:'patient',Appointments:'appointment',Diagnostics:'lab',Medications:'prescription',Messages:'message',Reports:'report','Health Records':'record',Treatments:'treatment'};
+const Hero=({t,s,children})=><div className="hero g" style={{display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}><div><h1 style={{margin:0}}>{t}</h1><p style={{margin:'6px 0 0'}}>{s}</p></div><div style={{marginLeft:'auto'}}>{children}</div></div>;
+
+function FormModal({k,onClose,onSaved,toast}){
+ const F=FORMS[k],[v,setV]=useState({}),[er,setEr]=useState(''),[busy,setBusy]=useState(false);
+ const save=async()=>{
+  if(F.f.some(x=>!String(v[x[0]]||'').trim()))return setEr('Please fill in all fields');
+  const data={...v};if(k==='report')data.summary=`AI summary for ${v.patient}: ${v.kind}. Vitals stable (HR 72 bpm, BP 120/80, SpO2 98%). No critical findings. Follow-up recommended in 4 weeks.`;
+  setBusy(true);try{await api('/doctor/items',{method:'POST',body:{type:k,data}});toast(F.t+': saved');onSaved(F.page)}catch(e){setEr(e.message);setBusy(false)}};
+ return <div className="modal" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="mb"><h2>{F.ic} {F.t}</h2>
+ {F.f.map(([key,label,kind])=><div key={key}><label>{label}</label>{Array.isArray(kind)?<select className="fi" value={v[key]||''} onChange={e=>setV({...v,[key]:e.target.value})}><option value="">Select</option>{kind.map(o=><option key={o}>{o}</option>)}</select>:kind==='textarea'?<textarea className="fi" rows="3" value={v[key]||''} onChange={e=>setV({...v,[key]:e.target.value})}/>:<input className="fi" type={kind||'text'} value={v[key]||''} onChange={e=>setV({...v,[key]:e.target.value})}/>}</div>)}
+ <div className="err">{er}</div><div style={{display:'flex',gap:8,marginTop:12}}><button className="btn g" disabled={busy} onClick={save}>{busy?'Saving...':'Save'}</button><button className="btn o" onClick={onClose}>Cancel</button></div></div></div>}
+
+function Collection({type,u,act,toast,setForm}){
+ const F=FORMS[type],[items,setItems]=useState(null),cols=['#6366f1','#ec4899','#f97316','#0d9488'];
+ const load=()=>u.guest?setItems(SAMPLE[type].map((d,i)=>({_id:'s'+i,data:d}))):api('/doctor/items?type='+type).then(setItems).catch(e=>toast(e.message));
+ useEffect(()=>{load()},[]);
+ const del=async id=>{await api('/doctor/items/'+id,{method:'DELETE'});load()};
+ return <><Hero t={F.ic+' '+F.page} s={(items?items.length:0)+' records'}><button className="btn" style={{background:'#fff',color:'var(--p)'}} onClick={act(()=>setForm(type))}>+ {F.t}</button></Hero>
+ <div className="w" style={{cursor:'default'}}>{!items?<p>Loading...</p>:!items.length?<p style={mut}>No records yet. Use the button above to add one.</p>:items.map((x,i)=>{const [a,b,c]=F.line(x.data);return <div className="row" key={x._id}><div className="pa" style={{background:cols[i%4]}}>{(a||'?')[0]}</div><div style={{minWidth:0}}><b>{a}</b><br/><small style={mut}>{b}</small></div>{c&&<span className={'pill t '+(c==='Urgent'?'w2':'u')}>{c}</span>}<button className="btn o" style={{padding:'4px 10px',marginLeft:c?0:'auto'}} onClick={act(()=>del(x._id))}>✕</button></div>})}</div></>}
+
+const INS=[['Michael Davis','High BP trend','BP above 150/95 for 3 days. Why: age 58, family history of hypertension, missed doses.','Suggested: review medication and call the patient.','#ef4444'],['Sarah Johnson','Rising diabetes risk','HbA1c rose by 0.6 in 3 months. Why: weight gain and low activity.','Suggested: diet plan and repeat the test in 4 weeks.','#f59e0b'],['Olivia Brown','Sleep quality dropping','Average sleep fell to 5.2 hours. Why: stress score increased.','Suggested: counselling check-in.','#6366f1']];
+const Insights=()=><><Hero t="✨ AI Insights" s="Every insight explains why it was raised. Final decisions stay with the doctor."/><div className="pg">{INS.map(i=><div className="w" key={i[0]} style={{cursor:'default',borderLeft:'5px solid '+i[4]}}><h3>{i[0]}: {i[1]}</h3><p>{i[2]}</p><b style={{color:i[4]}}>{i[3]}</b></div>)}</div></>;
+const BARS=[['Mon',12],['Tue',18],['Wed',9],['Thu',15],['Fri',20],['Sat',7],['Sun',11]];
+const Analytics=()=><><Hero t="📊 Analytics" s="Weekly clinic overview"/><div className="pg"><div className="w" style={{cursor:'default'}}><h3>Appointments this week</h3><div className="ts" style={{height:140}}>{BARS.map(b=><i key={b[0]} title={b[1]} style={{height:b[1]/20*100+'%'}}/>)}</div><div style={{display:'flex',justifyContent:'space-between',fontSize:'.72rem'}}>{BARS.map(b=><span key={b[0]}>{b[0]}</span>)}</div></div><div className="w" style={{cursor:'default'}}><h3>Key numbers</h3>{[['Total patients','2,458'],['Avg. wait time','12 min'],['Patient satisfaction','94%'],['Follow-up rate','81%']].map(r=><div className="row" key={r[0]}>{r[0]}<b className="t">{r[1]}</b></div>)}</div></div></>;
+const AL=[['Michael Davis','High BP: 160/100','Critical'],['Olivia Brown','SpO2 dropped to 92%','Critical'],['Emma Clark','Heart rate 118 bpm','Critical'],['Sarah Johnson','Abnormal lab: LDL high','Warning'],['James Williams','Missed 2 doses of Metformin','Warning'],['Noah Smith','Follow-up overdue','Info']];
+function Alerts({act}){const [gone,setGone]=useState([]),list=AL.filter(a=>!gone.includes(a[1]));return <><Hero t="🔔 Alerts" s={list.length+' open alerts'}/><div className="w" style={{cursor:'default'}}>{!list.length&&<p style={mut}>All alerts acknowledged.</p>}{list.map(a=><div className="row" key={a[1]}><div className="pa" style={{background:a[2]==='Critical'?'#ef4444':a[2]==='Warning'?'#f59e0b':'#6366f1'}}>!</div><div><b>{a[0]}</b><br/><small style={mut}>{a[1]}</small></div><span className={'pill t '+(a[2]==='Info'?'u':'w2')}>{a[2]}</span><button className="btn o" style={{padding:'4px 10px'}} onClick={act(()=>setGone([...gone,a[1]]))}>Acknowledge</button></div>)}</div></>}
+function DoctorPage({page,u,act,toast,setForm,rev}){
+ if(PT[page])return <Collection key={PT[page]+rev} type={PT[page]} u={u} act={act} toast={toast} setForm={setForm}/>;
+ return page==='AI Insights'?<Insights/>:page==='Analytics'?<Analytics/>:<Alerts act={act}/>}
+
+/* ---------------- Patient pages ---------------- */
+const DRS=['Dr. Alex Morgan','Dr. Priya Singh','Dr. Rohan Mehta'];
+const REP=[['Complete Blood Count','14 May','Normal','All values are within range.'],['Lipid Profile','13 May','Borderline','LDL is slightly high. Reduce fried food.'],['Thyroid Profile','11 May','Normal','Thyroid function is normal.'],['Vitamin D','10 May','Low','Get morning sunlight and take supplements as advised.'],['Chest X-Ray','2 May','Normal','Lungs are clear.']];
+const NOTI=[['🧪','Your Lipid Profile report is ready','5 min ago'],['📅','Appointment tomorrow at 10:00 AM','1 hour ago'],['💊','Time to take Metformin','3 hours ago'],['✅','Amlodipine marked as taken','Yesterday'],['📱','SMS reminder sent for your next visit','2 days ago']];
+function PatientPage({page,u,act,setGate,toast}){
+ const [d,setD]=useState(null),[f,setF]=useState({doctor:DRS[0],date:''}),[bp,setBp]=useState(''),[msgs,setMsgs]=useState([['a','Hello! Ask me anything about your health.']]),[q,setQ]=useState('');
+ const load=()=>api(u.guest?'/public/sample':'/patient/dashboard').then(setD).catch(e=>toast(e.message));useEffect(()=>{load()},[]);
+ if(!d)return <p>Loading...</p>;
+ const gp=u.guest?{readOnly:true,onFocus:()=>setGate(true)}:{},sp=u.guest?{onMouseDown:e=>{e.preventDefault();setGate(true)}}:{},card={cursor:'default'};
+ const book=async()=>{if(!f.date)return toast('Please choose a date and time');try{await api('/patient/appointments',{method:'POST',body:{doctor:f.doctor,specialty:'Consultation',date:f.date}});toast('Appointment booked');setF({...f,date:''});load()}catch(e){toast(e.message)}};
+ const take=async id=>{await api('/patient/meds/'+id+'/taken',{method:'PATCH'});load()};
+ const addBp=async()=>{if(!bp)return toast('Enter a BP value');try{await api('/patient/tracker',{method:'POST',body:{bp}});setBp('');toast('Saved');load()}catch(e){toast(e.message)}};
+ const send=()=>{if(!q.trim())return;setMsgs(m=>[...m,['u',q],['a',bot(q)]]);setQ('')};
+ if(page==='Appointments')return <><Hero t="📅 Appointments" s="Book and track your visits"/><div className="pg"><div className="w" style={card}><h3>Book an appointment</h3><label style={mut}>Doctor</label><select className="fi" value={f.doctor} {...sp} onChange={e=>setF({...f,doctor:e.target.value})}>{DRS.map(x=><option key={x}>{x}</option>)}</select><label style={mut}>Date and time</label><input className="fi" type="datetime-local" value={f.date} {...gp} onChange={e=>setF({...f,date:e.target.value})}/><br/><br/><button className="btn g" onClick={act(book)}>Book now</button></div>
+ <div className="w" style={card}><h3>Your appointments</h3>{d.appointments.map(a=><div className="row" key={a._id}><div className="pa g">{a.doctor.replace('Dr. ','')[0]}</div><div><b>{a.doctor}</b><br/><small style={mut}>{a.specialty}</small></div><div className="t">{tm(a.date)}<br/><span className={'pill '+(new Date(a.date)<new Date()?'':'u')}>{new Date(a.date)<new Date()?'Past':'Upcoming'}</span></div></div>)}</div></div></>;
+ if(page==='Medications')return <><Hero t="💊 Medications" s="Your daily medicine schedule"/><div className="w" style={card}>{d.meds.map(m=><div className="row" key={m._id}>💊 <div><b>{m.name}</b><br/><small style={mut}>{m.time}</small></div><button className={'btn '+(m.taken?'':'g')} style={{marginLeft:'auto',padding:'5px 12px'}} onClick={act(()=>take(m._id))}>{m.taken?'✔ Taken':'Mark taken'}</button></div>)}<small style={mut}>📱 SMS reminders are sent at each dose time</small></div></>;
+ if(page==='Health Records')return <><Hero t="🗂 Health Records" s="Your medical history in one place"/><div className="pg">{[['Basic info',['Blood group: B+','Height: 172 cm','Weight: 74 kg']],['Allergies and conditions',['Allergy: Penicillin','Mild hypertension','No surgeries']],['Vaccinations',['COVID-19: completed','Influenza: Oct 2026','Tetanus: 2024']],['Past visits',['12 May: Cardiology checkup','2 Mar: General checkup','10 Dec: Blood test']]].map(c=><div className="w" key={c[0]} style={card}><h3>{c[0]}</h3>{c[1].map(x=><div className="row" key={x}>{x}</div>)}</div>)}</div></>;
+ if(page==='Reports')return <><Hero t="🧪 Reports" s="Lab reports explained in simple language"/><div className="w" style={card}>{REP.map(r=><div className="row" key={r[0]}>📄 <div><b>{r[0]}</b> <small style={mut}>{r[1]}</small><br/><small>AI: {r[3]}</small></div><span className={'pill t '+(r[2]==='Normal'?'':'w2')}>{r[2]}</span></div>)}</div></>;
+ if(page==='Health Tracker'){const e=d.tracker.slice().reverse();return <><Hero t="📈 Health Tracker" s="Log your daily readings"/><div className="pg"><div className="w" style={card}><h3>Add blood pressure (systolic)</h3><div style={{display:'flex',gap:6}}><input className="fi" type="number" placeholder="e.g. 122" value={bp} {...gp} onChange={ev=>setBp(ev.target.value)}/><button className="btn g" onClick={act(addBp)}>Add</button></div><div className="ts" style={{height:110}}>{d.tracker.slice(-7).map((t,i)=><i key={i} title={t.bp} style={{height:t.bp/1.8+'%'}}/>)}</div></div><div className="w" style={card}><h3>History</h3>{!e.length&&<p style={mut}>No readings yet.</p>}{e.map((t,i)=><div className="row" key={i}>❤️ BP {t.bp}<span className="t">{t.createdAt?tm(t.createdAt):'Sample'}</span></div>)}</div></div></>}
+ if(page==='AI Assistant')return <><Hero t="🤖 AI Health Assistant" s="General information only. Not a substitute for a doctor."/><div className="w ai" style={card}><div className="chat" style={{height:320}}>{msgs.map((m,i)=><div key={i} className={'m '+m[0]} style={m[0]==='a'?{color:'var(--tx)'}:{}}>{m[1]}{m[0]==='a'&&i>0&&<><br/><small>For information only. Please consult your doctor.</small></>}</div>)}</div><div style={{display:'flex',gap:6,marginTop:8}}><input className="fi" placeholder="Ask something..." value={q} {...gp} onChange={ev=>setQ(ev.target.value)} onKeyDown={ev=>ev.key==='Enter'&&send()}/><button className="btn" style={{background:'#fff',color:'var(--p)'}} onClick={act(send)}>Send</button></div></div></>;
+ return <><Hero t="🔔 Notifications" s="Latest updates"/><div className="w" style={card}>{NOTI.map(n=><div className="row" key={n[1]}>{n[0]} <span>{n[1]}</span><span className="t">{n[2]}</span></div>)}</div></>}
+
+/* ---------------- App shell ---------------- */
+export default function App(){
+ const [u,setU]=useState(null),[view,setView]=useState('land'),[role,setRole]=useState('patient'),[sm,setSm]=useState('login'),[page,setPage]=useState('Dashboard'),[gate,setGate]=useState(false),[organ,setOrgan]=useState(null),[bell,setBell]=useState(false),[tmsg,setT]=useState(''),[form,setForm]=useState(null),[rev,setRev]=useState(0);
+ const toast=t=>{setT(t);setTimeout(()=>setT(''),2200)};
+ useEffect(()=>{if(localStorage.getItem('mv_t'))api('/auth/me').then(x=>setU({...x,guest:false})).catch(()=>localStorage.removeItem('mv_t'))},[]);
+ const act=fn=>()=>u.guest?setGate(true):fn();
+ const logout=()=>{localStorage.removeItem('mv_t');setU(null);setView('land');setPage('Dashboard')};
+ const toAuth=m=>{setGate(false);setU(null);setRole('patient');setSm(m);setView('auth')};
+ const guest=r=>setU({role:r,guest:true,name:r==='doctor'?'Dr. Alex Morgan':'Rahul Sharma'});
+ const top=<><Badge/>{tmsg&&<div className="toast">{tmsg}</div>}</>;
+ if(!u)return <>{top}{view==='land'?<Landing go={r=>{setRole(r);setSm('login');setView('auth')}}/>:<Auth key={role+sm} role={role} startMode={sm} onBack={()=>setView('land')} onDone={x=>{setU({...x,guest:false});setPage('Dashboard')}} onGuest={()=>guest(role)}/>}</>;
+ const D=u.role==='doctor',nav=D?NAVD:NAVP;
+ return <>{top}{gate&&<Gate onClose={()=>setGate(false)} onAuth={toAuth}/>}{organ&&<OrganModal k={organ} onClose={()=>setOrgan(null)}/>}{form&&<FormModal k={form} toast={toast} onClose={()=>setForm(null)} onSaved={pg=>{setForm(null);setRev(rev+1);setPage(pg)}}/>}
+ <div className="app"><nav className="side"><div style={{marginBottom:12}}><Logo hide/></div>
+ {nav.map((n,i)=><a key={n} className={n===page?'on':''} onClick={()=>setPage(n)}>{n==='Settings'?'⚙':IC[i%IC.length]} <span>{n}</span>{D&&n==='Alerts'&&<b className="bdg">6</b>}</a>)}
+ <a onClick={logout} style={{marginTop:'auto'}}>⏻ <span>Logout</span></a><div className="sby"><i>DY</i><span><small>Built by</small><b>Dilip Yadav</b></span></div></nav>
+ <div className="main"><div className="top"><input placeholder="Search patients, records, tests..." readOnly={u.guest} onFocus={()=>u.guest&&setGate(true)}/>
+ <div style={{position:'relative'}}><button className="btn o bell" onClick={()=>setBell(!bell)}>🔔 3</button>{bell&&<div className="dn"><div className="row">🧪 Lab report ready <span className="t">5m</span></div><div className="row">📅 Appointment tomorrow <span className="t">1h</span></div><div className="row">💊 Medicine due 8 PM <span className="t">3h</span></div></div>}</div>
+ <div className="who"><div className="av">{u.name.replace('Dr. ','')[0]}</div><div><b>{u.name}</b><br/><small style={mut}>{D?'Cardiologist':'Patient'}</small></div></div></div>
+ {u.guest&&<div className="demo">👀 Guest mode: view only. Login or sign up to make changes.</div>}
+ {page==='Settings'?<Settings toast={toast}/>:page!=='Dashboard'?(D?<DoctorPage page={page} u={u} act={act} toast={toast} setForm={setForm} rev={rev}/>:<PatientPage key={page} page={page} u={u} act={act} setGate={setGate} toast={toast}/>):D?<Doctor u={u} act={act} setOrgan={setOrgan} toast={toast} setForm={setForm}/>:<Patient key={u.id||'g'} u={u} act={act} setGate={setGate} toast={toast}/>}</div></div></>}

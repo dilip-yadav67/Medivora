@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: medivora-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - {key: MONGO_URI, sync: false}
+      - {key: JWT_SECRET, generateValue: true}
+      - {key: CLIENT_URL, sync: false}
+      - {key: DOCTOR_EMAIL, sync: false}
+      - {key: DOCTOR_PASSWORD, sync: false}
