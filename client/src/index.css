@@ -110,3 +110,9 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer;border:0;tr
  .by{position:fixed;left:50%;right:auto;top:auto;transform:translateX(-50%);margin:0;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:45;white-space:nowrap}
  body:has(.side) .by{transform:none;left:auto}
 }
+
+/* Mobile: Built by badge stays fixed at the bottom of landing and login pages */
+@media(max-width:800px){
+ .by{position:fixed;left:50%;right:auto;transform:translateX(-50%);margin:0;bottom:calc(10px + env(safe-area-inset-bottom,0px));white-space:nowrap}
+ .land{min-height:100dvh;padding-bottom:64px}
+}
