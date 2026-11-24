@@ -127,3 +127,8 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer;border:0;tr
 @media(max-width:800px){
  .land:has(.auth){min-height:calc(100vh + 70px);min-height:calc(100dvh + 70px)}
 }
+
+/* Phones only: move the landing content a little lower */
+@media(max-width:800px){
+ .land:not(:has(.auth)){padding-top:100px}
+}
