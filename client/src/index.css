@@ -103,3 +103,10 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer;border:0;tr
  body:has(.side) .by{display:flex;position:fixed;right:10px;left:auto;margin:0;bottom:calc(74px + env(safe-area-inset-bottom,0px));z-index:45;padding:3px 10px 3px 3px;font-size:.7rem}
  body:has(.side) .by i{width:22px;height:22px;font-size:.6rem}
 }
+
+/* Mobile: login screens - fixed Built by badge, content shifted up */
+@media(max-width:800px){
+ .land{justify-content:flex-start;padding-top:7vh;padding-bottom:70px;min-height:100vh;min-height:100dvh}
+ .by{position:fixed;left:50%;right:auto;top:auto;transform:translateX(-50%);margin:0;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:45;white-space:nowrap}
+ body:has(.side) .by{transform:none;left:auto}
+}
