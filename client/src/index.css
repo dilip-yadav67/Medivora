@@ -100,3 +100,9 @@ html,body{overflow-x:hidden}
  .auth{padding:20px}
  .by{position:static;margin:10px auto}
 }
+
+/* Mobile: keep the Built by badge visible above the bottom nav */
+@media(max-width:800px){
+ body:has(.side) .by{display:flex;position:fixed;right:10px;left:auto;margin:0;bottom:calc(74px + env(safe-area-inset-bottom,0px));z-index:45;padding:3px 10px 3px 3px;font-size:.7rem}
+ body:has(.side) .by i{width:22px;height:22px;font-size:.6rem}
+}
