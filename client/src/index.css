@@ -66,7 +66,7 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer;border:0;tr
 
 /* ===== Mobile layout (phones and small tablets) ===== */
 @media(max-width:800px){
- html,body{overflow-x:hidden}
+ html,body{overflow-x:clip}
  input,select,textarea{font-size:16px}
  .app{display:block}
  .main{padding:12px 12px 96px;overflow-x:hidden}
@@ -115,4 +115,11 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer;border:0;tr
 @media(max-width:800px){
  .by{position:fixed;left:50%;right:auto;transform:translateX(-50%);margin:0;bottom:calc(10px + env(safe-area-inset-bottom,0px));white-space:nowrap}
  .land{min-height:100dvh;padding-bottom:64px}
+}
+
+/* Mobile: Built by badge must not scroll with the page (final fix, keep at the end) */
+@media(max-width:800px){
+ html,body{overflow-x:clip}
+ .by{position:fixed;top:auto;bottom:calc(10px + env(safe-area-inset-bottom,0px));left:50%;right:auto;transform:translate3d(-50%,0,0);margin:0;z-index:70;will-change:transform}
+ body:has(.side) .by{left:auto;right:10px;bottom:calc(74px + env(safe-area-inset-bottom,0px));transform:translate3d(0,0,0)}
 }
