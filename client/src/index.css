@@ -119,6 +119,11 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer;border:0;tr
 
 /* Phones only: keep the Built by badge fixed on landing and login screens */
 @media(max-width:800px){
- body:not(:has(.side)) .by{position:fixed;left:auto;right:12px;transform:none;bottom:calc(12px + env(safe-area-inset-bottom,0px));margin:0;z-index:60;white-space:nowrap}
+ body:not(:has(.side)) .by{position:fixed;left:50%;right:auto;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px));margin:0;z-index:60;white-space:nowrap}
  .land{padding-bottom:70px}
+}
+
+/* Phones only: let the login page scroll a little */
+@media(max-width:800px){
+ .land:has(.auth){min-height:calc(100vh + 70px);min-height:calc(100dvh + 70px)}
 }
