@@ -165,7 +165,7 @@ function PatientPage({page,u,act,setGate,toast}){
 
 /* ---------------- App shell ---------------- */
 export default function App(){
- const [u,setU]=useState(null),[view,setView]=useState('land'),[role,setRole]=useState('patient'),[sm,setSm]=useState('login'),[page,setPage]=useState('Dashboard'),[gate,setGate]=useState(false),[organ,setOrgan]=useState(null),[bell,setBell]=useState(false),[tmsg,setT]=useState(''),[form,setForm]=useState(null),[rev,setRev]=useState(0);
+ const [u,setU]=useState(null),[view,setView]=useState('land'),[role,setRole]=useState('patient'),[sm,setSm]=useState('login'),[page,setPage]=useState('Dashboard'),[gate,setGate]=useState(false),[organ,setOrgan]=useState(null),[bell,setBell]=useState(false),[tmsg,setT]=useState(''),[form,setForm]=useState(null),[rev,setRev]=useState(0),[menu,setMenu]=useState(false);
  const toast=t=>{setT(t);setTimeout(()=>setT(''),2200)};
  useEffect(()=>{if(localStorage.getItem('mv_t'))api('/auth/me').then(x=>setU({...x,guest:false})).catch(()=>localStorage.removeItem('mv_t'))},[]);
  const act=fn=>()=>u.guest?setGate(true):fn();
@@ -181,6 +181,6 @@ export default function App(){
  <a onClick={logout} style={{marginTop:'auto'}}>⏻ <span>Logout</span></a><div className="sby" style={{marginBottom:32}}><i>DY</i><span><small>Built by</small><b>Dilip Yadav</b></span></div></nav>
  <div className="main"><div className="top"><input placeholder="Search patients, records, tests..." readOnly={u.guest} onFocus={()=>u.guest&&setGate(true)}/>
  <div style={{position:'relative'}}><button className="btn o bell" onClick={()=>setBell(!bell)}>🔔 3</button>{bell&&<div className="dn"><div className="row">🧪 Lab report ready <span className="t">5m</span></div><div className="row">📅 Appointment tomorrow <span className="t">1h</span></div><div className="row">💊 Medicine due 8 PM <span className="t">3h</span></div></div>}</div>
- <div className="who"><div className="av">{u.name.replace('Dr. ','')[0]}</div><div><b>{u.name}</b><br/><small style={mut}>{D?'Cardiologist':'Patient'}</small></div></div></div>
+ <div className="wh">{menu&&<div style={{position:'fixed',inset:0,zIndex:39}} onClick={()=>setMenu(false)}/>}<div className="who" role="button" tabIndex={0} onClick={()=>setMenu(!menu)} onKeyDown={e=>e.key==='Enter'&&setMenu(!menu)}><div className="av">{u.name.replace('Dr. ','')[0]}</div><div className="wn"><b>{u.name}</b><small style={mut}>{D?'Cardiologist':'Patient'}</small></div><span className="ar" style={mut}>▾</span></div>{menu&&<div className="dn" style={{width:190}}><div className="row"><div className="av">{u.name.replace('Dr. ','')[0]}</div><div className="wn"><b>{u.name}</b><small style={mut}>{D?'Cardiologist':'Patient'}</small></div></div><button className="btn g" style={{width:'100%',marginTop:8}} onClick={()=>{setMenu(false);logout()}}>⏻ Logout</button></div>}</div></div>
  {u.guest&&<div className="demo">👀 Guest mode: view only. Login or sign up to make changes.</div>}
  {page==='Settings'?<Settings toast={toast}/>:page!=='Dashboard'?(D?<DoctorPage page={page} u={u} act={act} toast={toast} setForm={setForm} rev={rev}/>:<PatientPage key={page} page={page} u={u} act={act} setGate={setGate} toast={toast}/>):D?<Doctor u={u} act={act} setOrgan={setOrgan} toast={toast} setForm={setForm}/>:<Patient key={u.id||'g'} u={u} act={act} setGate={setGate} toast={toast}/>}</div></div></>}
