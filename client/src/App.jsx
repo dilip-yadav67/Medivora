@@ -182,5 +182,5 @@ export default function App(){
  <div className="main"><div className="top"><input placeholder="Search patients, records, tests..." readOnly={u.guest} onFocus={()=>u.guest&&setGate(true)}/>
  <div style={{position:'relative'}}><button className="btn o bell" onClick={()=>setBell(!bell)}>🔔 3</button>{bell&&<div className="dn"><div className="row">🧪 Lab report ready <span className="t">5m</span></div><div className="row">📅 Appointment tomorrow <span className="t">1h</span></div><div className="row">💊 Medicine due 8 PM <span className="t">3h</span></div></div>}</div>
  <div className="who"><div className="av">{u.name.replace('Dr. ','')[0]}</div><div><b>{u.name}</b><br/><small style={mut}>{D?'Cardiologist':'Patient'}</small></div></div></div>
- {u.guest&&<div className="demo">👀 Guest mode: view only. Login or sign up to make changes.</div>}
+ {u.guest&&<div className="demo">👀 Guest mode: view only. Login or sign up is required to make changes.</div>}
  {page==='Settings'?<Settings toast={toast}/>:page!=='Dashboard'?(D?<DoctorPage page={page} u={u} act={act} toast={toast} setForm={setForm} rev={rev}/>:<PatientPage key={page} page={page} u={u} act={act} setGate={setGate} toast={toast}/>):D?<Doctor u={u} act={act} setOrgan={setOrgan} toast={toast} setForm={setForm}/>:<Patient key={u.id||'g'} u={u} act={act} setGate={setGate} toast={toast}/>}</div></div></>}
