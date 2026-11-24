@@ -46,11 +46,8 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer;border:0;tr
 .sby{display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px;border-radius:14px;background:linear-gradient(135deg,#eef2ff,#fdf2f8);border:1px solid var(--bd);color:#1e2340}.sby i{width:34px;height:34px;flex:none;border-radius:50%;display:grid;place-items:center;color:#fff;font-style:normal;font-weight:800;font-size:.75rem;background:linear-gradient(135deg,var(--p),var(--p2),#ec4899);box-shadow:0 4px 12px #8b5cf655}.sby small{display:block;font-size:.68rem;opacity:.7}.sby b{font-size:.85rem}:root[data-theme=dark] .sby{background:#2a3060;color:#e8ebff}body:has(.side) .by{display:none}
 @media(max-width:1000px){.app{grid-template-columns:1fr}.side{position:static;height:auto;flex-direction:row;overflow:auto}.side a span{display:none}.cols{grid-template-columns:1fr}.logo2{display:none}}
 
-/* Quick Actions: responsive */
-.w{min-width:0;max-width:100%}
-.qa{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-.qa button{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:3px;line-height:1.25;overflow-wrap:anywhere;text-align:left}
-@media(max-width:600px){.qa{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.qa button{padding:10px;font-size:.78rem}}
+/* Quick Actions: phones only */
+@media(max-width:800px){.w{min-width:0;max-width:100%}.qa{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.qa button{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:3px;line-height:1.25;overflow-wrap:anywhere;text-align:left;padding:10px;font-size:.78rem}}
 @media(max-width:340px){.qa{grid-template-columns:1fr}}
 
 .fi{width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--bd);background:var(--bg);color:var(--tx)}
@@ -68,8 +65,8 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer;border:0;tr
 .side a:last-of-type:active{transform:scale(.95)}
 
 /* ===== Mobile layout (phones and small tablets) ===== */
-html,body{overflow-x:hidden}
 @media(max-width:800px){
+ html,body{overflow-x:hidden}
  input,select,textarea{font-size:16px}
  .app{display:block}
  .main{padding:12px 12px 96px;overflow-x:hidden}
