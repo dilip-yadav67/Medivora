@@ -138,3 +138,12 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer;border:0;tr
  .land{min-height:calc(100vh + 80px);min-height:calc(100dvh + 80px)}
  .land:has(.auth){min-height:calc(100vh + 80px);min-height:calc(100dvh + 80px)}
 }
+
+/* Profile menu */
+.wh{position:relative}.who{cursor:pointer;user-select:none}.wn{min-width:0}.wn b,.wn small{display:block}.wn b{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ar{font-size:.7rem}
+@media(max-width:800px){.wh{margin-left:auto}.wn b{max-width:92px}}
+
+/* Phones only: bell notification panel fits inside the screen */
+@media(max-width:800px){
+ .bell+.dn{position:fixed;left:12px;right:12px;top:calc(62px + env(safe-area-inset-top,0px));width:auto;max-width:none}
+}
